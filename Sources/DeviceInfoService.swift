@@ -76,6 +76,16 @@ public extension DeviceInfoServiceContract {
         guard let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String else { return "Unnamed App" }
         return "\(appName) \(appBuildNumber)"
     }
+
+    public var apsEnvironment: String {
+        guard let filePath = Bundle.main.path(forResource: "embedded", ofType:"mobileprovision") else { return "simulator" }
+        if let string = URL(fileURLWithPath: filePath).data?.ascii {
+            if let env = string.extract(pattern: "<key>aps-environment</key>\n\t\t<string>([^<]*)</string>")?.first {
+                return env
+            }
+        }
+        return "unknown"
+    }
     
     /// User-facing display name of device, e.g. "John's iPhone"
     var deviceDisplayName: String {
@@ -212,6 +222,7 @@ public extension DeviceInfoServiceContract {
             "version": appVersion,
             "build": appBuildNumber,
             "identifier": appIdentifier,
+            "apsEnvironment": apsEnvironment
         ]
         if let token = token {
             appObject["token"] = token
@@ -304,6 +315,47 @@ fileprivate extension UNAlertStyle {
         case .none:
             return "none"
         }
+    }
+
+}
+
+
+fileprivate extension String {
+
+    /// Returns an array of substrings for all capture groups found in the first match, or nil if the pattern didn't match.
+    func extract(pattern: String) -> [String]? {
+        if let matcher = try? NSRegularExpression(pattern: pattern) {
+            let characterRange = NSRange(location: 0, length: characters.count)
+            if let match = matcher.firstMatch(in: self, options: [], range: characterRange) {
+                return (1..<match.numberOfRanges).map { substring(with: range(for: match.rangeAt($0))) }
+            }
+        }
+        return nil
+    }
+
+    private func range(for range: NSRange) -> Range<String.Index> {
+        let start = index(startIndex, offsetBy: range.location)
+        let last = index(start, offsetBy: range.length)
+        return start..<last
+    }
+
+}
+
+
+fileprivate extension URL {
+
+    var data: Data? {
+        guard isFileURL else { return nil }
+        return try? Data(contentsOf: self)
+    }
+
+}
+
+
+fileprivate extension Data {
+
+    var ascii: String? {
+        return String(data: self, encoding: .ascii)
     }
 
 }
