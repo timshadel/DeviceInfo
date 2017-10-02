@@ -28,12 +28,13 @@ public extension DeviceInfoServiceContract {
     
     /// e.g. "com.example.app"
     public var appIdentifier: String {
-        return Bundle.main.bundleIdentifier!
+        return Bundle.main.bundleIdentifier ?? "Unknown"
     }
     
     /// e.g. "Lister"
     public var appName: String {
-        return Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String
+        let displayName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? Bundle.main.infoDictionary?["CFBundleName"] as? String
+        return displayName ?? "Unknown"
     }
     
     /// e.g. "1.0.1"
@@ -80,12 +81,12 @@ public extension DeviceInfoServiceContract {
     
     /// Unique identifier of device, same across apps from a single vendor
     public var deviceIdentifier: String {
-        return UIDevice.current.identifierForVendor!.uuidString
+        return UIDevice.current.identifierForVendor?.uuidString ?? "Unknown"
     }
     
     /// The first preferred language of the user, e.g. "en-US"
     public var language: String {
-        return Locale.preferredLanguages.first!
+        return Locale.preferredLanguages.first ?? "en-US"
     }
     
     /// Identifier of the user's current locale, e.g. "en_US"
