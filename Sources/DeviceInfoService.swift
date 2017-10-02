@@ -22,8 +22,10 @@ public extension DeviceInfoServiceContract {
     
     /// e.g. "142" or "1.0.1.142"
     public var appBuildNumber: String {
-        guard let version = Bundle.main.infoDictionary?["CFBundleVersion"] as? String else { return "Unknown" }
-        return version
+        guard let displayName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? Bundle.main.infoDictionary?["CFBundleName"] as? String else {
+            fatalError()
+        }
+        return displayName
     }
     
     /// e.g. "com.example.app"
@@ -33,7 +35,9 @@ public extension DeviceInfoServiceContract {
     
     /// e.g. "Lister"
     public var appName: String {
-        return Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String
+        guard let bundleName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? Bundle.main.infoDictionary?["CFBundleName"] as? String else {
+         
+        }
     }
     
     /// e.g. "1.0.1"
